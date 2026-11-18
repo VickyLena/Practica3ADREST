@@ -1,0 +1,5 @@
+bdd/ConexionBDD$Imagen.class
+rest/resources/UsuarioResource.class
+bdd/ConexionBDD.class
+test/practica3adrest/resources/JakartaEE91Resource.class
+test/practica3adrest/JakartaRestConfiguration.class
