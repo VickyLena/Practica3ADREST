@@ -114,7 +114,7 @@ public class ConexionBDD {
         
         String sql = "SELECT * FROM image WHERE LOWER(TITLE) LIKE LOWER(?) "
                    + "AND LOWER(CREATOR) LIKE LOWER(?) "
-                   + "AND LOWER(KEYWORDS) LIKE LOWER(?)"
+                   + "AND LOWER(KEYWORDS) LIKE LOWER(?) "
                    + "AND CAPTURE_DATE LIKE ?";
 
         try (Connection connection = getConnection();
