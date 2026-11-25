@@ -1,4 +1,7 @@
-/home/alumne/NetBeansProjects/Practica3ADREST/src/main/java/test/practica3adrest/resources/JakartaEE91Resource.java
-/home/alumne/NetBeansProjects/Practica3ADREST/src/main/java/test/practica3adrest/JakartaRestConfiguration.java
-/home/alumne/NetBeansProjects/Practica3ADREST/src/main/java/bdd/ConexionBDD.java
-/home/alumne/NetBeansProjects/Practica3ADREST/src/main/java/rest/resources/UsuarioResource.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/bdd/ConexionBDD.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/rest/resources/ImagenResource.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/test/practica3adrest/resources/JakartaEE91Resource.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/util/JsonUtil.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/util/Ficheros.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/rest/resources/UsuarioResource.java
+/home/alumne/Documentos/AD/Practica3ADREST/src/main/java/test/practica3adrest/JakartaRestConfiguration.java
