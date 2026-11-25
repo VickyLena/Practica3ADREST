@@ -16,6 +16,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import util.JsonUtil;
 import util.Ficheros;
+import java.io.File;
 
 @Path("")
 public class ImagenResource {
@@ -251,6 +252,39 @@ public class ImagenResource {
         return Response.ok(
                 JsonUtil.mensaje("Imagen eliminada correctamente").toString()
         ).build();
+    }
+    
+        /**
+     * GET method to download the file of an image
+     * @param id
+     * @return los bytes de la imagen con su tipo MIME
+     */
+    @Path("download/{id}")
+    @GET
+    public Response downloadImage(@PathParam("id") int id) {
+
+        // 1. Comprobar que la imagen existe en la BD
+        Imagen imagen = ConexionBDD.obtenerImagenPorId(id);
+        if (imagen == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(JsonUtil.mensaje("Imagen no encontrada").toString())
+                    .build();
+        }
+
+        // 2. Comprobar que su fichero existe en el disco
+        File fichero = Ficheros.obtener(imagen.getFichero());
+        if (fichero == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(JsonUtil.mensaje("La imagen no tiene fichero asociado").toString())
+                    .build();
+        }
+
+        // 3. Devolver el fichero con su tipo MIME
+        return Response.ok(fichero, Ficheros.tipoMime(fichero))
+                .header("Content-Disposition", "inline; filename=\"" + fichero.getName() + "\"")
+                .build();
     }
     private static String limpio(String valor) {
         return valor == null ? "" : valor.trim();
