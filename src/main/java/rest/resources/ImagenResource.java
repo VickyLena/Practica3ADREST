@@ -114,6 +114,88 @@ public class ImagenResource {
     }
 
     /**
+     * POST method to modify an existing image
+     * @param id
+     * @param title
+     * @param description
+     * @param keywords
+     * @param creator, used for checking image ownership
+     * @param capt_date
+     * @return
+     */
+    @Path("modify")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response modifyImage(@FormParam("id") String id,
+                                @FormParam("title") String title,
+                                @FormParam("description") String description,
+                                @FormParam("keywords") String keywords,
+                                @FormParam("creator") String creator,
+                                @FormParam("capture") String capt_date) {
+
+        // 1. Comprobar parámetros obligatorios
+        if (id == null || id.isBlank() || creator == null || creator.isBlank()
+                || title == null || title.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(JsonUtil.mensaje("Faltan parámetros obligatorios (id, title, creator)").toString())
+                    .build();
+        }
+
+        int idImagen;
+        try {
+            idImagen = Integer.parseInt(id.trim());
+        } catch (NumberFormatException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(JsonUtil.mensaje("El id debe ser un número").toString())
+                    .build();
+        }
+
+        // La fecha, si viene, tiene que ser yyyy-mm-dd
+        String fecha = limpio(capt_date);
+        if (!fecha.isEmpty() && !fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(JsonUtil.mensaje("La fecha debe tener formato yyyy-mm-dd").toString())
+                    .build();
+        }
+
+        // 2. Comprobar que la imagen existe
+        Imagen imagen = ConexionBDD.obtenerImagenPorId(idImagen);
+        if (imagen == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(JsonUtil.mensaje("Imagen no encontrada").toString())
+                    .build();
+        }
+
+        // 3. Comprobar que la imagen es del usuario que la quiere modificar
+        if (!imagen.getAutor().equalsIgnoreCase(creator.trim())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(JsonUtil.mensaje("Solo el propietario puede modificar la imagen").toString())
+                    .build();
+        }
+
+        // 4. Modificar en la BD (se mantiene el fichero que ya tenía)
+        boolean modificada = ConexionBDD.modificarImagen(
+                idImagen,
+                title.trim(),
+                limpio(description),
+                limpio(keywords),
+                fecha,
+                imagen.getFichero(),
+                imagen.getAutor());
+
+        if (!modificada) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(JsonUtil.mensaje("No se ha podido modificar la imagen").toString())
+                    .build();
+        }
+
+        return Response.ok(
+                JsonUtil.mensaje("Imagen modificada correctamente").toString()
+        ).build();
+    }
+
+    /**
      * POST method to delete an existing image
      * @param id
      * @param creator
@@ -169,5 +251,8 @@ public class ImagenResource {
         return Response.ok(
                 JsonUtil.mensaje("Imagen eliminada correctamente").toString()
         ).build();
+    }
+    private static String limpio(String valor) {
+        return valor == null ? "" : valor.trim();
     }
 }
