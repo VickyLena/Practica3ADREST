@@ -289,4 +289,113 @@ public class ImagenResource {
     private static String limpio(String valor) {
         return valor == null ? "" : valor.trim();
     }
+
+    @Context
+    private HttpHeaders headers;
+
+    @Path("upload")
+    @POST
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response upload(InputStream archivo) {
+
+        try {
+            String nombre = headers.getHeaderString("X-Filename");
+
+            if (nombre == null || nombre.isBlank()) {
+                return Response.status(400).build();
+            }
+
+            nombre = nombre.replace('\\', '/');
+            nombre = nombre.substring(nombre.lastIndexOf('/') + 1);
+            nombre = nombre.replaceAll("[^a-zA-Z0-9._-]", "_");
+
+            if (nombre.isBlank() || nombre.equals(".")
+                    || nombre.equals("..")) {
+                return Response.status(400).build();
+            }
+
+            // Crear nombre unico
+            nombre = UUID.randomUUID() + "_" + nombre;
+
+            java.nio.file.Path carpeta = java.nio.file.Path.of("/home/alumne/uploads");
+            Files.createDirectories(carpeta);
+
+            Files.copy(archivo, carpeta.resolve(nombre));
+
+            return Response.status(201)
+                    .entity(Json.createObjectBuilder()
+                            .add("fichero", nombre)
+                            .build().toString())
+                    .build();
+
+        } catch (Exception e) {
+            return Response.status(500).build();
+        }
+    }
+    
+    
+    @Path("register")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registerImage(
+            @FormParam("title") String title,
+            @FormParam("description") String description,
+            @FormParam("keywords") String keywords,
+            @FormParam("creator") String creator,
+            @FormParam("capture") String capt_date) {
+
+        if (title == null || title.isBlank()
+                || creator == null || creator.isBlank()
+                || capt_date == null || capt_date.isBlank()) {
+
+            return Response.status(400)
+                    .entity(JsonUtil.mensaje("Faltan datos obligatorios").toString())
+                    .build();
+        }
+
+        // Recuperar el nombre del archivo del header http
+        String fichero = headers.getHeaderString("X-Filename");
+
+        if (fichero == null || fichero.isBlank()) {
+            return Response.status(400)
+                    .entity(JsonUtil.mensaje("Falta el fichero").toString())
+                    .build();
+        }
+
+        // Comprobar que el fichero existe 
+        java.nio.file.Path carpeta =
+                java.nio.file.Path.of("/home/alumne/uploads");
+
+        java.nio.file.Path rutaFichero = carpeta.resolve(fichero).normalize();
+
+        if (!rutaFichero.getParent().equals(carpeta)
+                || !Files.isRegularFile(rutaFichero)) {
+
+            return Response.status(400)
+                    .entity(JsonUtil.mensaje("Fichero no encontrado").toString())
+                    .build();
+        }
+
+        boolean registrado = ConexionBDD.registrarImagen(
+                title,
+                description,
+                keywords,
+                creator,
+                capt_date,
+                LocalDate.now().toString(),
+                fichero
+        );
+
+        if (registrado) {
+            return Response.status(201)
+                    .entity(JsonUtil.mensaje("Imagen registrada correctamente").toString())
+                    .build();
+        }
+
+        return Response.status(500)
+                .entity(JsonUtil.mensaje("Error registrando imagen").toString())
+                .build();
+    }
 }
