@@ -22,7 +22,7 @@ public class UsuarioResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(
-            @FormParam("usuario") String usuario,
+            @FormParam("username") String usuario,
             @FormParam("password") String password) {
 
         boolean valido =
